@@ -27,19 +27,19 @@ public:
                time_point begin = clock::now())
     {
         if (run)
-            start(begin);
+            start (begin);
     }
     
     Stopwatch (const double_seconds offset)
     {
-        start(clock::now() - offset);
+        start (clock::now() - offset);
     }
     
     /**
      * @brief Start timing
      * @param now Current time - defaults to clock::now()
      */
-    void start(const time_point begin = clock::now())
+    void start (const time_point begin = clock::now())
     {
         m_begin = begin;
         m_running = true;
@@ -49,16 +49,16 @@ public:
      * @brief Start timing
      * @param offset Used to offset the m_start variable and therefore offset the time elapsed.
      */
-    void start(const double_seconds offset)
+    void start (const double_seconds offset)
     {
-        start(clock::now() - offset);
+        start (clock::now() - offset);
     }
     
     /**
      * @brief Stop timing
      * @param now Current time - defaults to clock::now()
      */
-    void stop(const time_point end = clock::now())
+    void stop (const time_point end = clock::now())
     {
         m_end = end;
         m_running = false;
@@ -69,7 +69,7 @@ public:
      * @param now Current time - defaults to clock::now()
      * @return Delta between \a now and m_start if the Stopwatch is running. If the Stopwatch is stopped will return the delta between m_start and m_end.
      */
-    double_seconds elapsed(time_point now = clock::now()) const
+    double_seconds elapsed (time_point now = clock::now()) const
     {        
         if (!m_running)
             now = m_end;
@@ -85,7 +85,7 @@ public:
      */
     void resume()
     {
-        start(m_end);
+        start (m_end);
     }
     
     /**
