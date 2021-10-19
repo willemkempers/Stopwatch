@@ -12,6 +12,10 @@
 namespace form
 {
 
+using clock = std::chrono::steady_clock;
+using double_seconds = std::chrono::duration<double>;
+using time_point = std::chrono::time_point<clock, double_seconds>;
+
 /**
  * @brief Stopwatch class
  * @details Uses a std::chrono::steady_clock to keep track of elapsed time
@@ -19,10 +23,6 @@ namespace form
 class Stopwatch
 {
 public:
-    using clock = std::chrono::steady_clock;
-    using double_seconds = std::chrono::duration<double>;
-    using time_point = std::chrono::time_point<clock, double_seconds>;
-
     Stopwatch (bool run = false,
                time_point begin = clock::now())
     {
