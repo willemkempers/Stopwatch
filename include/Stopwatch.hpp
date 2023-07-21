@@ -7,14 +7,6 @@
 #pragma once
 
 #include <chrono>
-#include <memory>
-
-namespace form
-{
-
-using clock = std::chrono::steady_clock;
-using double_seconds = std::chrono::duration<double>;
-using time_point = std::chrono::time_point<clock, double_seconds>;
 
 /**
  * @brief Stopwatch class
@@ -22,61 +14,69 @@ using time_point = std::chrono::time_point<clock, double_seconds>;
  */
 class Stopwatch
 {
+    using clock = std::chrono::steady_clock;
+    using time_point = clock::time_point;
+    using duration = clock::duration;
+
 public:
-    Stopwatch (bool run = false,
-               time_point begin = clock::now())
+    enum class Mode
+    {
+        run,
+        pause,
+        stop
+    };
+
+public:
+    Stopwatch(bool run = false,
+              time_point begin = clock::now())
     {
         if (run)
-            start (begin);
+            start(begin);
     }
     
-    Stopwatch (const double_seconds offset)
+    Stopwatch(const duration offset)
     {
-        start (clock::now() - offset);
+        start(clock::now() - offset);
     }
     
     /**
      * @brief Start timing
      * @param now Current time - defaults to clock::now()
      */
-    void start (const time_point begin = clock::now())
+    void start(const time_point begin = clock::now())
     {
         m_begin = begin;
-        m_running = true;
+        m_mode = Mode::run;
     }
 
     /**
      * @brief Start timing
      * @param offset Used to offset the m_start variable and therefore offset the time elapsed.
      */
-    void start (const double_seconds offset)
+    void start(const duration offset)
     {
-        start (clock::now() - offset);
+        start(clock::now() - offset);
+    }
+    
+    /**
+     * @brief Pause timing
+     * @param end Current time, defaults to `clock::now()`
+     */
+    void pause(const time_point end = clock::now())
+    {
+        if (m_mode == Mode::run)
+        {
+            m_end = end;
+            m_mode = Mode::pause;
+        }
     }
     
     /**
      * @brief Stop timing
-     * @param now Current time - defaults to clock::now()
      */
-    void stop (const time_point end = clock::now())
+    void stop()
     {
-        m_end = end;
-        m_running = false;
-    }
-    
-    /**
-     * @brief Get the elapsed time since the Stopwatch was started
-     * @param now Current time - defaults to clock::now()
-     * @return Delta between \a now and m_start if the Stopwatch is running. If the Stopwatch is stopped will return the delta between m_start and m_end.
-     */
-    double_seconds elapsed (time_point now = clock::now()) const
-    {        
-        if (!m_running)
-            now = m_end;
-        
-        double_seconds delta = now - m_begin;
-        
-        return delta;
+        m_mode = Mode::stop;
     }
     
     /**
@@ -85,21 +85,57 @@ public:
      */
     void resume()
     {
-        start (m_end);
+        if (m_mode == Mode::pause)
+            start(m_end);
+        else if (m_mode == Mode::stop)
+            start();
+    }
+
+    /**
+     * @brief Get the elapsed time since the Stopwatch was started
+     * @param now Current time - defaults to clock::now()
+     * @return Delta between \a now and m_start if the Stopwatch is running. If the Stopwatch is stopped will return the delta between m_start and m_end.
+     */
+    duration elapsed(time_point now = clock::now()) const
+    {
+        if (m_mode == Mode::stop)
+            return duration(0);
+        else if (m_mode == Mode::pause)
+            now = m_end;
+        
+        duration delta = now - m_begin;
+        
+        return delta;
     }
     
     /**
      * @brief Check if the Stopwatch is running
-     * @return const reference to m_running. If true the Stopwatch is running, if false the Stopwatch is stopped
+     * @return true if the Stopwatch is running, else false
      */
-    const bool& running() const
+    bool running() const
     {
-        return m_running;
+        return m_mode == Mode::run;
     }
     
+    /**
+     * @brief Check if the Stopwatch is paused
+     * @return true if the Stopwatch is paused, else false
+     */
+    bool paused() const
+    {
+        return m_mode == Mode::pause;
+    }
+
+    /**
+     * @brief Check if the Stopwatch is stopped
+     * @return true if the Stopwatch is stopped, else false
+     */
+    bool stopped() const
+    {
+        return m_mode == Mode::stop;
+    }
+
 private:
     time_point m_begin, m_end;
-    bool m_running;
+    Mode m_mode = Mode::stop;
 };
-
-} // namespace form
